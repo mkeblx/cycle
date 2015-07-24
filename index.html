@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+	<title>cycle</title>
+
+<style>
+
+body {
+	font-family: sans-serif;
+}
+
+#container {
+	width: 960px;
+	margin: 0px auto;
+}
+
+</style>
+
+</head>
+<body>
+	<div id="container">
+		<h1>cycle</h1>
+
+		<div id="rows">
+		</div>
+
+		<div id="combs">
+			<h3>combinations</h3>
+
+			<div id="combinations">
+			</div>
+		</div>
+
+	</div>
+
+<script src="js/jquery-2.1.4.min.js"></script>
+<script src="js/lodash.min.js"></script>
+<script>
+/*
+
+*/
+
+var $combinations = $('#combinations');
+
+var N = 16;
+
+var set = _.range( 1, N+1 );
+
+$combinations.append( set.join('-') );
+
+</script>
+
+</body>
+</html>
