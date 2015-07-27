@@ -26,7 +26,8 @@ body {
 </head>
 <body>
 	<div id="container">
-		<h1>cycle</h1>
+		<h1>sequences.</h1>
+		<p>find the set of sequences of a set of numbers S: 1...N, that satisfy a adjacency constraint f: a+b = a perfect square.</p>
 
 		<div id="rows">
 		</div>
@@ -34,8 +35,7 @@ body {
 		<div id="combs">
 			<h3>combinations</h3>
 
-			<div id="combinations">
-			</div>
+			<div id="combinations">&nbsp;</div>
 
 			<input type="button" value="Generate" id="generate-btn">
 		</div>
@@ -71,6 +71,119 @@ strategies:
 --foreach in set pick next
 ----
 
+iterate through 1..N : k
+  interate through valid pairs 1..P : p
+    put p in spot...
+
+
+recursive func?
+findSeqs (n) : n = 16
+
+
+n = 2
+generate list of len=n, base case
+# len = 2 (count: 32)
+1,3
+1,8
+1,15
+2,7
+2,14
+3,1
+3,6
+3,13
+4,5
+4,12
+5,4
+5,11
+6,3
+6,10
+7,2
+7,9
+8,1
+9,7
+9,16
+10,6
+10,15
+11,5
+11,14
+12,4
+12,13
+13,3
+13,12
+14,2
+14,11
+15,1
+15,10
+16,9
+
+# len = 3 (count: )
+ 1, 3 => 1,3,1 : 1,3,6 : 1,3,13
+ 1, 8 =>  1,8,1
+ 1,15 => 1,15,1 : 1,15,10
+ 2, 7 => 2,7,2 : 2,7,9
+ 2,14 => 2,14,2 : 2,14,11
+ 3, 1 => 3,1,3 : 3,1,8 : 3,1,15
+ 3, 6 => 3,6,3 : 3,6,10
+ 3,13 => 3,13,3 : 3,13,12
+ 4, 5 => 4,5,4 : 4,5,11
+ 4,12 => 4,12,4 : 4,12,13
+ 5, 4 => 5,4,5 : 5,4,12
+ 5,11 => 5,11,5 : 5,11,14
+ 6, 3 => 6,3,1 : 6,3,6 : 6,3,13
+ 6,10 => 6,10,6 : 6,10,15
+ 7, 2 => 7,2,7 : 7,2,14
+ 7, 9 => 7,9,7 : 7,9,16
+ 8, 1 => 8,1,3 : 8,1,8 : 8,1,15
+ 9, 7 => 9,7,2 : 9,7,9
+ 9,16 => 9,16,9
+10, 6 => 10,6,3 : 10,6,10
+10,15 => 10,15,1 : 10,15,10
+11, 5 => 11,5,4 : 11,5,11
+11,14 => 11,14,2 : 11,14,11
+12, 4 => 12,4,5 : 12,4,12
+12,13 => 12,13,3 : 12,13,12
+13, 3 => 13,3,1 : 13,3,6 : 13,3,13
+13,12 => 13,12,4 : 13,12,13
+14, 2 => 14,2,7 : 14,2,14
+14,11 => 14,11,5 : 14,11,14
+15, 1 => 15,1,3 : 15,1,8 : 15,1,15
+15,10 => 15,10,6 : 15,10,15
+16, 9 => 16,9,7 : 16,9,16
+
+// prune at end, or during
+
+generate list of len=n (n)
+
+// iterate and append...
+for (var i = 0; i < seqs.length; i++) {
+	var currSeq = seqs[i];
+
+	var end = currSeq[ currSeq.length-1 ];
+	// TODO: bound check, continue/break?
+	var vals = validVals[ end ];
+
+	// TODO: have to remove already used, how to accomplish: tmp variable
+
+	// if vals.length after pruning is empty... remove from seqs <= this should work
+
+	for (var j = 0; j < vals.length; j++) {
+		var v = vals[j];
+		currSeq.push( v );
+	}
+
+	// pruning, have to have a removal step
+
+}
+
+... thru to K (K = 16)
+
+generate list of len=16 (n)
+
+// done => seqs = [ ...valid sequences... ]
+
+// ^
+
+
 -create table like below, sort by length, test out
 
 squares: 1,4,9,16,25, 36
@@ -96,6 +209,8 @@ manual test: 8,1,15,10,6,3,13,12,4,5,11,14,2,7,9,16
 
 */
 
+var testSeq = [8,1,15,10,6,3,13,12,4,5,11,14,2,7,9,16]; // valid
+
 var N = 16;
 var set = _.range( 1, N+1 );
 
@@ -111,9 +226,12 @@ var squares = [];
 
 var maxSum = set[ set.length-1 ] + set[ set.length-2 ];
 
-var subset = _.take( set, Math.floor( Math.sqrt( maxSum ) ) );
-// take function : ( array, k ) => get first k elements from array
+var subset = set.slice( 0, Math.floor( Math.sqrt( maxSum ) ) );
 squares = _.map( subset, square );
+
+// intermediate data structure: table of valid pairings
+// { 1: [3,8,15], ... }
+var validVals = {};
 
 /*
 ## alternate pruning... post
@@ -123,19 +241,15 @@ squares = _.filter( squares, function( n ){ return n < maxSum; } );
 
 var isPerfectSquare = function( n ) {
 	return Math.sqrt( n ) % 1 === 0; // int test
-	// alternate implementation: could test if n is in a generated list
-	// return _.contains( squares, n );
+	// alternate: return _.contains( squares, n );
 };
 
 var PefectSquareSum = function( a, b ) {
 	var sum = a + b;
-
-	console.log(sum);
-
 	return isPerfectSquare( sum );
 };
-// constraint function
-var constrait = PefectSquareSum;
+//  constraint function
+var constraint = PefectSquareSum;
 
 
 $combinations.append( set.join(',') );
@@ -156,10 +270,6 @@ var sequences = []; // array of sequences
 
 function generate() {
 
-	// intermediate data structure: table of valid pairings
-	// { 1: [3,8,15], ... }
-	var validVals = {};
-
 	for (var i = 0; i < set.length; i++)
 	{
 		var pick = set[i];
@@ -179,27 +289,147 @@ function generate() {
 	}
 
 	// debug
-	_.forEach( validVals, function( n, key ){
+	/*_.forEach( validVals, function( n, key ){
 		console.log( key+": " + n.join(',') );
+	} );*/
+
+	sequences = findValidSeqs( 2 );
+
+	_.forEach( sequences, function( n, key ){
+		console.log(  n.join(',') );
 	} );
-
-	sequences = findValidSequences();
-
-
+	//console.log( sequences );
 }
 
 /*
-choose one
+find valid sequences of length n
 */
-function findValidSequences() {
+function findValidSeqs( n ) {
+	if (n < 2)
+		return []; // or undefined/error
+
+	if (n == 2) { // `base case
+		var seqs = [];
+
+		var N = 16;
+		var nums = _.range( 1, N+1 );
+
+		for (var i = 0; i < nums.length; i++)
+		{
+			var n = nums[i];
+			var vals = validVals[ n ];
+
+			for (var j = 0; j < vals.length; j++) {
+				var val = vals[ j ];
+
+				var seq = [ n, val ];
+
+				seqs.push( seq );
+			}
+		}
+
+		return seqs;
+	}
+
+	if (n == 3) {
+		var seqs = findValidSeqs( n-1 );
+
+		for (var i = 0; i < seqs.length; i++)
+		{
+			var seq = seqs[ i ];
+
+			var end = seq[ seq.length-1 ];
+
+			var vals = validVals[ end ];
+
+			if (vals.length == 0) {
+				// remove seq?
+			}
+
+			for (var j = 0; j < vals.length; j++)
+			{
+				var val = vals[ j ];
+			}
+
+			seq.push(  );
+		}
+
+		return seqs;
+	}
+
+	if (n == 4) {
+		var seqs = findValidSeqs( 3 ); // 3 = n-1
+
+		for (var i = 0; i < seqs.length; i++)
+		{
+			// same as above loop...
+		}
+
+		return seqs;
+	}
+
+	if ( n > 2 ) { // can remove
+		var seqs = findValidSeqs( n-1 );
+
+		for (var i = 0; i < seqs.length; i++)
+		{
+			//
+		}
+
+		return seqs;
+	}
+
+	// var seqs = [];
+	// TODO: compute properly... appending?
+	//findSeqs(n-1) + ?
+
+	return []; // findSeqs(seqs, n-1); // note: can remove
+}
+
+/*
+return: list of valid sequences
+*/
+function findValidSequences( ) {
 	var seqs = [];
 
 	// naive brute force loop
 	for (var i = 0; i < set.length; i++)
 	{
+		var seq = new Array(set.length);
+		var workingSet = _.range( 1, N+1 );
+		var curPos = 0;
+
+
+
 		var p = set[i];
 
+		seq[0] = p;
 
+		for (var j = 0; j < validVals[ p ]; j++)
+		{
+
+		}
+		//seq[];
+	}
+
+	return seqs;
+}
+
+// _.pullAt ( array, index ) => get element at index, removing from array
+
+/*
+Horrible brute force method...
+Randomly shuffle set, check validity
+*/
+function findValidSequencesRandom( validVals, iterations ) {
+	var seqs = [];
+
+	for (var i = 0; i < iterations; i++)
+	{
+		var shuffledSet = _.shuffle( set );
+
+		if ( testSequence( shuffledSet, constraint ) )
+			seqs.push( shuffledSet );
 	}
 
 	return seqs;
@@ -239,20 +469,20 @@ function test() {
 
 	console.log(list);
 
-	var valid = testList( list, constrait );
+	var valid = testList( list, constraint );
 
 	$('#test-msg').html( valid ? 'Pass!' : 'Fail' );
 }
 
 /*
-Test if a give list is valid
+Test if a give sequence is valid
 list: list of N values
 f: constraint function
 return: boolean validity
 */
-function testList( list, f ) {
+function testSequence( list, f ) {
 
-	for (var i = 0; i < list.length-1 ; i++)
+	for (var i = 0; i < list.length-1; i++)
 	{
 		if ( ! f( list[i], list[i+1] ) )
 			return false;
