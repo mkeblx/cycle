@@ -15,6 +15,11 @@ body {
 	margin: 0px auto;
 }
 
+#combinations {
+	border: 1px solid #cccccc;
+	padding: 5px;
+}
+
 #test-inputs input {
 	width: 30px;
 	margin-right: 8px;
@@ -27,7 +32,7 @@ body {
 <body>
 	<div id="container">
 		<h1>sequences.</h1>
-		<p>find the set of sequences of a set of numbers S: 1...N, that satisfy a adjacency constraint f: a+b = a perfect square.</p>
+		<p>find the set of sequences of a set of numbers S: 1...N, that satisfy a neighbor constraint, where sum of self and neighbor is a perfect square.</p>
 
 		<div id="rows">
 		</div>
@@ -37,6 +42,7 @@ body {
 
 			<div id="combinations">&nbsp;</div>
 
+			<br />
 			<input type="button" value="Generate" id="generate-btn">
 		</div>
 
@@ -48,37 +54,95 @@ body {
 			<div id="test-inputs"></div>
 
 			<input type="button" value="Test" id="test-btn">
+						<br />
 			<div id="test-msg">
 			</div>
 		</div>
 
+		<br><br>
+		<div>
+			<h3>code</h3>
+			<p>most relevant code, primary function. recursive implementation. working testable code on <a href="https://github.com/mkeblx/cycle">github</a></p></p>
+
+<pre class="code">
+/*
+find valid sequences of length n
+- recursive implementation
+*/
+function findValidSeqs( n ) {
+	if (n < 2)
+		return []; // or undefined/error
+
+	if (n == 2) { // `base case
+		var seqs = [];
+
+		var N = 16;
+		var nums = _.range( 1, N+1 );
+
+		for (var i = 0; i < nums.length; i++)
+		{
+			var n = nums[i];
+			var vals = validVals[ n ];
+
+			for (var j = 0; j < vals.length; j++)
+			{
+				var val = vals[ j ];
+
+				var seq = [ n, val ];
+
+				seqs.push( seq );
+			}
+		}
+
+		return seqs;
+	}
+
+	if (n > 2) {
+		var seqs = findValidSeqs( n-1 );
+
+		var newSeqs = [];
+		for (var i = 0; i < seqs.length; i++)
+		{
+			var seq = seqs[ i ];
+
+			var end = seq[ seq.length-1 ];
+
+			var vals = validVals[ end ];
+
+			for (var j = 0; j < vals.length; j++)
+			{
+				var newSeq = seq.slice();
+
+				var val = vals[ j ];
+
+				if ( newSeq.indexOf( val ) === -1 )
+				{
+					newSeq.push( val );
+
+					newSeqs.push( newSeq );
+				}
+			}
+		}
+
+		return newSeqs;
+	}
+}
+</pre>
+
+		</div>
+
 	</div>
+
 
 <script src="js/jquery-2.1.4.min.js"></script>
 <script src="js/lodash.min.js"></script>
 <script>
 /*
-TODO:
--create list of all cycles
--
--
--
--
 
 strategies:
--random pick then test
--sequential testing/brute force
---foreach in set pick next
-----
-
-iterate through 1..N : k
-  interate through valid pairs 1..P : p
-    put p in spot...
-
-
-recursive func?
-findSeqs (n) : n = 16
-
+-random pick then test <= brute force, horrible
+-iterative
+-recursive <= just do this
 
 n = 2
 generate list of len=n, base case
@@ -116,80 +180,137 @@ generate list of len=n, base case
 15,10
 16,9
 
-# len = 3 (count: )
- 1, 3 => 1,3,1 : 1,3,6 : 1,3,13
- 1, 8 =>  1,8,1
- 1,15 => 1,15,1 : 1,15,10
- 2, 7 => 2,7,2 : 2,7,9
- 2,14 => 2,14,2 : 2,14,11
- 3, 1 => 3,1,3 : 3,1,8 : 3,1,15
- 3, 6 => 3,6,3 : 3,6,10
- 3,13 => 3,13,3 : 3,13,12
- 4, 5 => 4,5,4 : 4,5,11
- 4,12 => 4,12,4 : 4,12,13
- 5, 4 => 5,4,5 : 5,4,12
- 5,11 => 5,11,5 : 5,11,14
- 6, 3 => 6,3,1 : 6,3,6 : 6,3,13
- 6,10 => 6,10,6 : 6,10,15
- 7, 2 => 7,2,7 : 7,2,14
- 7, 9 => 7,9,7 : 7,9,16
- 8, 1 => 8,1,3 : 8,1,8 : 8,1,15
- 9, 7 => 9,7,2 : 9,7,9
- 9,16 => 9,16,9
-10, 6 => 10,6,3 : 10,6,10
-10,15 => 10,15,1 : 10,15,10
-11, 5 => 11,5,4 : 11,5,11
-11,14 => 11,14,2 : 11,14,11
-12, 4 => 12,4,5 : 12,4,12
-12,13 => 12,13,3 : 12,13,12
-13, 3 => 13,3,1 : 13,3,6 : 13,3,13
-13,12 => 13,12,4 : 13,12,13
-14, 2 => 14,2,7 : 14,2,14
-14,11 => 14,11,5 : 14,11,14
-15, 1 => 15,1,3 : 15,1,8 : 15,1,15
-15,10 => 15,10,6 : 15,10,15
-16, 9 => 16,9,7 : 16,9,16
+# len = 3 (count: 36)
+ 1, 3 => 1,3,6 : 1,3,13
+ 1, 8 => ---
+ 1,15 => 1,15,10
+ 2, 7 => 2,7,9
+ 2,14 => 2,14,11
+ 3, 1 => 3,1,8 : 3,1,15
+ 3, 6 => 3,6,10
+ 3,13 => 3,13,12
+ 4, 5 => 4,5,11
+ 4,12 => 4,12,13
+ 5, 4 => 5,4,12
+ 5,11 => 5,11,14
+ 6, 3 => 6,3,1 : 6,3,13
+ 6,10 => 6,10,15
+ 7, 2 => 7,2,14
+ 7, 9 => 7,9,16
+ 8, 1 => 8,1,3 : 8,1,15
+ 9, 7 => 9,7,2
+ 9,16 => ---
+10, 6 => 10,6,3
+10,15 => 10,15,1
+11, 5 => 11,5,4
+11,14 => 11,14,2
+12, 4 => 12,4,5
+12,13 => 12,13,3
+13, 3 => 13,3,1 : 13,3,6
+13,12 => 13,12,4
+14, 2 => 14,2,7
+14,11 => 14,11,5
+15, 1 => 15,1,3 : 15,1,8
+15,10 => 15,10,6
+16, 9 => 16,9,7
 
+unpruned count: 64-2 = 62, 62+6 = 68
+  pruned count: 32 - 2 + 6 = 32+4 = 36
 // prune at end, or during
+// during: gen new possible combos as set of valids of end, subtract curent sequence
+
+# len = 4 (count: 40)
+1,3,6   => 1,3,6,10
+1,3,13  => 1,3,13,12
+1,15,10 => 1,15,10,6
+2,7,9   => 2,7,9,16
+2,14,11 => 2,14,11,5
+3,1,8   => ---
+3,1,15  => 3,1,15,10
+3,6,10  => 3,6,10,15
+3,13,12 => 3,13,12,4
+4,5,11  => 4,5,11,14
+4,12,13 => 4,12,13,3
+5,4,12  => 5,4,12,13
+5,11,14 => 5,11,14,2
+6,3,1   => 6,3,1,8 : 6,3,1,15
+6,3,13  => 6,3,13,12
+6,10,15 => 6,10,15,1
+7,2,14  => 7,2,14,11
+7,9,16  => ---
+8,1,3   => 8,1,3,6 : 8,1,3,13
+8,1,15  => 8,1,15,10
+9,7,2   => 9,7,2,14
+10,6,3  => 10,6,3,1 : 10,6,3,13
+10,15,1 => 10,15,1,3 : 10,15,1,8
+11,5,4  => 11,5,4,12
+11,14,2 => 11,14,2,7
+12,4,5  => 12,4,5,11
+12,13,3 => 12,13,3,1 : 12,13,3,6
+13,3,1  => 13,3,1,8 : 13,3,1,15
+13,3,6  => 13,3,6,10
+13,12,4 => 13,12,4,5
+14,2,7  => 14,2,7,9
+14,11,5 => 14,11,5,4
+15,1,3  => 15,1,3,6 : 15,1,3,13
+15,1,8  => ---
+15,10,6 => 15,10,6,3
+16,9,7  => 16,9,7,2
+
+# len = 5 (count: 42)
+1,3,6,10  => 1,3,6,10,15
+1,3,13,12 => 1,3,13,12,4
+1,15,10,6 => 1,15,10,6,3
+2,7,9,16  => ---
+2,14,11,5 => 2,14,11,5,4
+3,1,15,10 => 3,1,15,10,6
+3,6,10,15 => 3,6,10,15,1
+3,13,12,4 => 3,13,12,4,5
+4,5,11,14 => 4,5,11,14,2
+4,12,13,3 => 4,12,13,3,1 : 4,12,13,3,6
+5,4,12,13 => 5,4,12,13,3
+5,11,14,2 => 5,11,14,2,7
+6,3,1,8   => ---
+6,3,1,15  => 6,3,1,15,10
+6,3,13,12 => 6,3,13,12,4
+6,10,15,1 => 6,10,15,1,3 : 6,10,15,1,8
+7,2,14,11 => 7,2,14,11,5
+8,1,3,6   => 8,1,3,6,10
+8,1,3,13  => 8,1,3,13,12
+8,1,15,10 => 8,1,15,10,6
+9,7,2,14  => 9,7,2,14,11
+10,6,3,1  => 10,6,3,1,8 : 10,6,3,1,15
+10,6,3,13 => 10,6,3,13,12
+10,15,1,3 => 10,15,1,3,6 : 10,15,1,3,13
+10,15,1,8 => ---
+11,5,4,12 => 11,5,4,12,13
+11,14,2,7 => 11,14,2,7,9
+12,4,5,11 => 12,4,5,11,14
+12,13,3,1 => 12,13,3,1,8 : 12,13,3,1,15
+12,13,3,6 => 12,13,3,6,10
+13,3,1,8  => ---
+13,3,1,15 => 13,3,1,15,10
+13,3,6,10 => 13,3,6,10,15
+13,12,4,5 => 13,12,4,5,11
+14,2,7,9  => 14,2,7,9,6
+14,11,5,4 => 14,11,5,4,12
+15,1,3,6  => 15,1,3,6,10
+15,1,3,13 => 15,1,3,13,12
+15,10,6,3 => 15,10,6,3,1 : 15,10,6,3,13
+16,9,7,2  => 16,9,7,2,14
 
 generate list of len=n (n)
-
-// iterate and append...
-for (var i = 0; i < seqs.length; i++) {
-	var currSeq = seqs[i];
-
-	var end = currSeq[ currSeq.length-1 ];
-	// TODO: bound check, continue/break?
-	var vals = validVals[ end ];
-
-	// TODO: have to remove already used, how to accomplish: tmp variable
-
-	// if vals.length after pruning is empty... remove from seqs <= this should work
-
-	for (var j = 0; j < vals.length; j++) {
-		var v = vals[j];
-		currSeq.push( v );
-	}
-
-	// pruning, have to have a removal step
-
-}
 
 ... thru to K (K = 16)
 
 generate list of len=16 (n)
 
 // done => seqs = [ ...valid sequences... ]
-
 // ^
 
+squares: 1,4,9,16,25
 
--create table like below, sort by length, test out
-
-squares: 1,4,9,16,25, 36
-
-manual test: 8,1,15,10,6,3,13,12,4,5,11,14,2,7,9,16
-
+table to generate:
  1: 3,  8, 15
  2: 7, 14
  3: 1,  6, 13
@@ -209,35 +330,33 @@ manual test: 8,1,15,10,6,3,13,12,4,5,11,14,2,7,9,16
 
 */
 
-var testSeq = [8,1,15,10,6,3,13,12,4,5,11,14,2,7,9,16]; // valid
-
-var N = 16;
-var set = _.range( 1, N+1 );
+var testSeq = [8,1,15,10,6,3,13,12,4,5,11,14,2,7,9,16]; // manually found, valid
 
 var $combinations = $('#combinations');
 
 
+var N = 16;
+var set = _.range( 1, N+1 );
+
+
 var square = function(n) { return n*n };
 var squares = [];
-
-/*
-
-*/
 
 var maxSum = set[ set.length-1 ] + set[ set.length-2 ];
 
 var subset = set.slice( 0, Math.floor( Math.sqrt( maxSum ) ) );
 squares = _.map( subset, square );
 
-// intermediate data structure: table of valid pairings
-// { 1: [3,8,15], ... }
-var validVals = {};
-
 /*
 ## alternate pruning... post
 squares = _.map( set, square );
 squares = _.filter( squares, function( n ){ return n < maxSum; } );
 */
+
+// intermediate data structure: table of valid pairings
+// { 1: [3,8,15], ... }
+var validVals = {};
+
 
 var isPerfectSquare = function( n ) {
 	return Math.sqrt( n ) % 1 === 0; // int test
@@ -251,8 +370,6 @@ var PefectSquareSum = function( a, b ) {
 //  constraint function
 var constraint = PefectSquareSum;
 
-
-$combinations.append( set.join(',') );
 
 function initialize() {
 
@@ -268,8 +385,21 @@ function initialize() {
 
 var sequences = []; // array of sequences
 
-function generate() {
 
+function generate() {
+	generateValidValsTable();
+
+	sequences = findValidSeqs( N );
+
+	// output
+	$combinations.html('');
+	_.forEach( sequences, function( n, key ){
+		$combinations.append( n.join(',') + "<br>" );
+		console.log(  n.join(',') );
+	} );
+}
+
+function generateValidValsTable() {
 	for (var i = 0; i < set.length; i++)
 	{
 		var pick = set[i];
@@ -278,31 +408,20 @@ function generate() {
 
 		for (var j = 0; j < squares.length; j++)
 		{
-			var diff = squares[j] - pick;
+			var diff = squares[ j ] - pick;
 			if (
-				diff > 0 && diff <= set[set.length-1] &&
+				diff > 0 && diff <= set[ set.length-1 ] &&
 				diff !== pick )
 				vals.push( diff );
 		}
 
 		validVals[ pick ] = vals;
 	}
-
-	// debug
-	/*_.forEach( validVals, function( n, key ){
-		console.log( key+": " + n.join(',') );
-	} );*/
-
-	sequences = findValidSeqs( 2 );
-
-	_.forEach( sequences, function( n, key ){
-		console.log(  n.join(',') );
-	} );
-	//console.log( sequences );
 }
 
 /*
 find valid sequences of length n
+- recursive implementation
 */
 function findValidSeqs( n ) {
 	if (n < 2)
@@ -319,7 +438,8 @@ function findValidSeqs( n ) {
 			var n = nums[i];
 			var vals = validVals[ n ];
 
-			for (var j = 0; j < vals.length; j++) {
+			for (var j = 0; j < vals.length; j++)
+			{
 				var val = vals[ j ];
 
 				var seq = [ n, val ];
@@ -331,9 +451,10 @@ function findValidSeqs( n ) {
 		return seqs;
 	}
 
-	if (n == 3) {
+	if (n > 2) {
 		var seqs = findValidSeqs( n-1 );
 
+		var newSeqs = [];
 		for (var i = 0; i < seqs.length; i++)
 		{
 			var seq = seqs[ i ];
@@ -342,48 +463,27 @@ function findValidSeqs( n ) {
 
 			var vals = validVals[ end ];
 
-			if (vals.length == 0) {
-				// remove seq?
-			}
-
 			for (var j = 0; j < vals.length; j++)
 			{
+				var newSeq = seq.slice();
+
 				var val = vals[ j ];
+
+				if ( newSeq.indexOf( val ) === -1 )
+				{
+					newSeq.push( val );
+
+					newSeqs.push( newSeq );
+				}
 			}
-
-			seq.push(  );
 		}
 
-		return seqs;
+		return newSeqs;
 	}
+}
 
-	if (n == 4) {
-		var seqs = findValidSeqs( 3 ); // 3 = n-1
-
-		for (var i = 0; i < seqs.length; i++)
-		{
-			// same as above loop...
-		}
-
-		return seqs;
-	}
-
-	if ( n > 2 ) { // can remove
-		var seqs = findValidSeqs( n-1 );
-
-		for (var i = 0; i < seqs.length; i++)
-		{
-			//
-		}
-
-		return seqs;
-	}
-
-	// var seqs = [];
-	// TODO: compute properly... appending?
-	//findSeqs(n-1) + ?
-
-	return []; // findSeqs(seqs, n-1); // note: can remove
+function hasDuplicates(a) {
+	return _.uniq(a).length !== a.length;
 }
 
 /*
@@ -399,8 +499,6 @@ function findValidSequences( ) {
 		var workingSet = _.range( 1, N+1 );
 		var curPos = 0;
 
-
-
 		var p = set[i];
 
 		seq[0] = p;
@@ -409,13 +507,10 @@ function findValidSequences( ) {
 		{
 
 		}
-		//seq[];
 	}
 
 	return seqs;
 }
-
-// _.pullAt ( array, index ) => get element at index, removing from array
 
 /*
 Horrible brute force method...
