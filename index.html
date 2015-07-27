@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
 <head>
+	<meta charset="utf-8">
 	<title>cycle</title>
 
 <style>
@@ -12,6 +13,12 @@ body {
 #container {
 	width: 960px;
 	margin: 0px auto;
+}
+
+#test-inputs input {
+	width: 30px;
+	margin-right: 8px;
+	font-size: 16px;
 }
 
 </style>
@@ -29,6 +36,20 @@ body {
 
 			<div id="combinations">
 			</div>
+
+			<input type="button" value="Generate" id="generate-btn">
+		</div>
+
+
+		<div id="tester">
+			<h3>tester</h3>
+
+			<h4>Enter values: (1-16, unique)</h4>
+			<div id="test-inputs"></div>
+
+			<input type="button" value="Test" id="test-btn">
+			<div id="test-msg">
+			</div>
 		</div>
 
 	</div>
@@ -37,16 +58,210 @@ body {
 <script src="js/lodash.min.js"></script>
 <script>
 /*
+TODO:
+-create list of all cycles
+-
+-
+-
+-
+
+strategies:
+-random pick then test
+-sequential testing/brute force
+--foreach in set pick next
+----
+
+-create table like below, sort by length, test out
+
+squares: 1,4,9,16,25, 36
+
+manual test: 8,1,15,10,6,3,13,12,4,5,11,14,2,7,9,16
+
+ 1: 3,  8, 15
+ 2: 7, 14
+ 3: 1,  6, 13
+ 4: 5, 12
+ 5: 4, 11
+ 6: 3, 10
+ 7: 2,  9
+ 8: 1
+ 9: 7, 16
+10: 6, 15
+11: 5, 14
+12: 4, 13
+13: 3, 12
+14: 2, 11
+15: 1, 10
+16: 9
 
 */
 
-var $combinations = $('#combinations');
-
 var N = 16;
-
 var set = _.range( 1, N+1 );
 
-$combinations.append( set.join('-') );
+var $combinations = $('#combinations');
+
+
+var square = function(n) { return n*n };
+var squares = [];
+
+/*
+
+*/
+
+var maxSum = set[ set.length-1 ] + set[ set.length-2 ];
+
+var subset = _.take( set, Math.floor( Math.sqrt( maxSum ) ) );
+// take function : ( array, k ) => get first k elements from array
+squares = _.map( subset, square );
+
+/*
+## alternate pruning... post
+squares = _.map( set, square );
+squares = _.filter( squares, function( n ){ return n < maxSum; } );
+*/
+
+var isPerfectSquare = function( n ) {
+	return Math.sqrt( n ) % 1 === 0; // int test
+	// alternate implementation: could test if n is in a generated list
+	// return _.contains( squares, n );
+};
+
+var PefectSquareSum = function( a, b ) {
+	var sum = a + b;
+
+	console.log(sum);
+
+	return isPerfectSquare( sum );
+};
+// constraint function
+var constrait = PefectSquareSum;
+
+
+$combinations.append( set.join(',') );
+
+function initialize() {
+
+	for (var i = 0; i < set.length; i++)
+	{
+		$('#test-inputs').append('<input id="t'+i+'">');
+	}
+
+	$('#test-btn').on('click', test);
+
+	$('#generate-btn').on('click', generate);
+}
+
+var sequences = []; // array of sequences
+
+function generate() {
+
+	// intermediate data structure: table of valid pairings
+	// { 1: [3,8,15], ... }
+	var validVals = {};
+
+	for (var i = 0; i < set.length; i++)
+	{
+		var pick = set[i];
+
+		var vals = [];
+
+		for (var j = 0; j < squares.length; j++)
+		{
+			var diff = squares[j] - pick;
+			if (
+				diff > 0 && diff <= set[set.length-1] &&
+				diff !== pick )
+				vals.push( diff );
+		}
+
+		validVals[ pick ] = vals;
+	}
+
+	// debug
+	_.forEach( validVals, function( n, key ){
+		console.log( key+": " + n.join(',') );
+	} );
+
+	sequences = findValidSequences();
+
+
+}
+
+/*
+choose one
+*/
+function findValidSequences() {
+	var seqs = [];
+
+	// naive brute force loop
+	for (var i = 0; i < set.length; i++)
+	{
+		var p = set[i];
+
+
+	}
+
+	return seqs;
+}
+
+// test valid input, test and display test pass/fail
+// TODO: add uniqueness check
+function test() {
+
+	var error = false;
+
+	var list = [  ];
+	for (var i = 0; i < set.length; i++)
+	{
+		var val = parseInt( $('#t'+i).val() );
+
+		// check if in range, value present
+		if ( val < 0 || val > 16 || isNaN(val) )
+			error = true;
+
+		list.push( val );
+	}
+
+	if ( _.uniq( list ).length != set.length )
+	{
+		$('#test-msg').html('Error: not all unique values');
+
+		return;
+	}
+
+	if (error)
+	{
+		$('#test-msg').html('Error: invalid entered values. Must be all integers in range');
+
+		return;
+	}
+
+	console.log(list);
+
+	var valid = testList( list, constrait );
+
+	$('#test-msg').html( valid ? 'Pass!' : 'Fail' );
+}
+
+/*
+Test if a give list is valid
+list: list of N values
+f: constraint function
+return: boolean validity
+*/
+function testList( list, f ) {
+
+	for (var i = 0; i < list.length-1 ; i++)
+	{
+		if ( ! f( list[i], list[i+1] ) )
+			return false;
+	}
+
+	return true;
+}
+
+$(initialize);
 
 </script>
 
